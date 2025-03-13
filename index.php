@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Location Explorer - Split View</title>
-    
+    <title>Location Explorer</title>
+
+    <!-- External Libraries and Stylesheets -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
     <div class="split-container">
+        <!-- Sidebar for Location Selection -->
         <div class="sidebar">
             <h2>
-                <i class="fas fa-location-crosshairs"></i>
-                Location Finder
+                <i class="fas fa-location-crosshairs"></i> Location Finder
             </h2>
-            
+
+            <!-- Step 1: Select Country -->
             <div class="location-step active">
                 <span class="step-number">1</span>
                 <label for="countryDropdown">
@@ -38,6 +42,7 @@
                 </select>
             </div>
 
+            <!-- Step 2: Select State -->
             <div class="location-step">
                 <span class="step-number">2</span>
                 <label for="stateDropdown">
@@ -48,6 +53,7 @@
                 </select>
             </div>
 
+            <!-- Step 3: Select City -->
             <div class="location-step">
                 <span class="step-number">3</span>
                 <label for="cityDropdown">
@@ -58,6 +64,7 @@
                 </select>
             </div>
 
+            <!-- Display Selected Location Details -->
             <div class="location-card">
                 <h5>Location Details</h5>
                 <div id="locationDetails"></div>
@@ -74,28 +81,33 @@
             </div>
         </div>
 
+        <!-- Map Container -->
         <div class="map-container">
             <div id="map"></div>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    
+
     <script>
+    // Initialize Map
     var map = L.map('map', {
         zoomControl: false
     }).setView([20.5937, 78.9629], 3);
 
+    // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    // Custom Zoom Control Position
     L.control.zoom({
         position: 'bottomright'
     }).addTo(map);
 
     var currentMarker = null;
 
+    // Function to update map and display selected location
     function updateMap(lat, lng, zoom, label) {
         if (lat && lng) {
             map.setView([lat, lng], zoom, {
@@ -118,38 +130,43 @@
         }
     }
 
-    $('#countryDropdown').change(function () {
+    // Event Listener for Country Selection
+    $('#countryDropdown').change(function() {
         var selectedOption = this.options[this.selectedIndex];
         var lat = selectedOption.getAttribute('data-lat');
         var lng = selectedOption.getAttribute('data-lng');
 
         updateMap(lat, lng, 5, selectedOption.text);
-        
-        $('#stateDropdown').prop('disabled', false)
-            .closest('.location-step').addClass('active');
+        $('#stateDropdown').prop('disabled', false).closest('.location-step').addClass('active');
 
-        $.get("fetch_states.php", { country_id: $(this).val() }, function (data) {
+        // Fetch states based on selected country
+        $.get("fetch_states.php", {
+            country_id: $(this).val()
+        }, function(data) {
             $('#stateDropdown').html(data);
             $('#cityDropdown').html('<option value="">Choose a city</option>').prop('disabled', true);
         });
     });
 
-    $('#stateDropdown').change(function () {
+    // Event Listener for State Selection
+    $('#stateDropdown').change(function() {
         var selectedOption = this.options[this.selectedIndex];
         var lat = selectedOption.getAttribute('data-lat');
         var lng = selectedOption.getAttribute('data-lng');
 
         updateMap(lat, lng, 7, selectedOption.text);
-        
-        $('#cityDropdown').prop('disabled', false)
-            .closest('.location-step').addClass('active');
+        $('#cityDropdown').prop('disabled', false).closest('.location-step').addClass('active');
 
-        $.get("fetch_cities.php", { state_id: $(this).val() }, function (data) {
+        // Fetch cities based on selected state
+        $.get("fetch_cities.php", {
+            state_id: $(this).val()
+        }, function(data) {
             $('#cityDropdown').html(data);
         });
     });
 
-    $('#cityDropdown').change(function () {
+    // Event Listener for City Selection
+    $('#cityDropdown').change(function() {
         var selectedOption = this.options[this.selectedIndex];
         var lat = selectedOption.getAttribute('data-lat');
         var lng = selectedOption.getAttribute('data-lng');
@@ -158,4 +175,5 @@
     });
     </script>
 </body>
+
 </html>
